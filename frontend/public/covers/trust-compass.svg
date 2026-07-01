@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750">
+  <rect width="1200" height="750" fill="#f7efe2"/>
+  <circle cx="600" cy="375" r="235" fill="#fff8ee" stroke="#241c15" stroke-width="10"/>
+  <circle cx="600" cy="375" r="86" fill="#8a231f"/>
+  <path d="M600 168l58 207-58 207-58-207z" fill="#241c15"/>
+  <path d="M393 375l207-58 207 58-207 58z" fill="#d6b15d"/>
+  <text x="566" y="407" fill="#fff8ee" font-size="82" font-family="serif">礼</text>
+  <path d="M120 650h960" stroke="#241c15" stroke-width="12"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750">
+  <rect width="1200" height="750" fill="#f4ead8"/>
+  <path d="M0 520c190-120 350-105 520-18 178 91 355 92 680-70v318H0z" fill="#d8c4a3"/>
+  <circle cx="955" cy="154" r="92" fill="#8a231f"/>
+  <path d="M122 182h430v312H122z" fill="#fff8ee" stroke="#241c15" stroke-width="8"/>
+  <path d="M170 246h326M170 313h326M170 380h218" stroke="#8a231f" stroke-width="18"/>
+  <path d="M690 238c80 0 80 90 160 90s80-90 160-90" fill="none" stroke="#241c15" stroke-width="22"/>
+  <text x="690" y="505" fill="#241c15" font-size="78" font-family="serif">信</text>
+</svg>
