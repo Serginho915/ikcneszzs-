@@ -22,6 +22,27 @@ function navigate(path: string) {
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
+function ShareBar({ title }: { title: string }) {
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+  const targets = [
+    { label: "X", href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
+    { label: "Threads", href: `https://www.threads.net/intent/post?text=${encodedTitle}%20${encodedUrl}` },
+    { label: "Telegram", href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}` },
+    { label: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+  ];
+
+  return (
+    <aside className="share-bar" aria-label="Share this post">
+      <span>Share</span>
+      {targets.map((target) => (
+        <a key={target.label} href={target.href} target="_blank" rel="noreferrer">{target.label}</a>
+      ))}
+    </aside>
+  );
+}
+
 function Header({ route }: { route: Route }) {
   const isAdminRoute = route.name === "admin";
   return (
@@ -136,6 +157,7 @@ function ArticlePage({ slug }: { slug: string }) {
         <p className="tag-line">{post.tags.join(" / ")}</p>
         <h1>{post.title}</h1>
         <p className="description">{post.excerpt}</p>
+        <ShareBar title={post.title} />
         <div className="content" dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
       </div>
     </main>
