@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import path from "path";
 import { adminRouter } from "./routes/admin.js";
 import { aiRouter } from "./routes/ai.js";
 import { authRouter } from "./routes/auth.js";
@@ -21,9 +22,10 @@ app.use(
     credentials: true
   })
 );
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "12mb" }));
 app.use(cookieParser());
 app.use(apiLimiter);
+app.use("/uploads", express.static(process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads")));
 
 app.use("/api/auth", authRouter);
 app.use("/api/posts", postsRouter);

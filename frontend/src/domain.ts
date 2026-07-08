@@ -15,6 +15,13 @@ export type Post = {
   updatedAt: string;
 };
 
+export type MediaAsset = {
+  name: string;
+  url: string;
+  size: number;
+  createdAt: string;
+};
+
 export type AdminSettings = {
   masterPrompt: string;
   generationEnabled: boolean;

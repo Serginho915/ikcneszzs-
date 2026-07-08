@@ -1,6 +1,12 @@
-import type { AdminSettings, Post } from "./domain";
+import type { AdminSettings, MediaAsset, Post } from "./domain";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+const ASSET_URL = API_URL.replace(/\/api\/?$/, "");
+
+export function assetUrl(url: string) {
+  if (!url || url.startsWith("http") || url.startsWith("data:")) return url;
+  return ASSET_URL + (url.startsWith("/") ? url : "/" + url);
+}
 
 let accessToken = localStorage.getItem("ikc_access_token") ?? "";
 let csrfToken = localStorage.getItem("ikc_csrf_token") ?? "";
@@ -79,5 +85,9 @@ export const api = {
   getSettings: () => request<AdminSettings>("/admin/settings", {}, true),
   updateSettings: (settings: AdminSettings) =>
     request<AdminSettings>("/admin/settings", { method: "PUT", body: JSON.stringify(settings) }, true),
-  generateNow: () => request<Post>("/ai/generate-now", { method: "POST" }, true)
+  generateNow: () => request<Post>("/ai/generate-now", { method: "POST" }, true),
+  listCoverImages: () => request<MediaAsset[]>("/admin/media/covers", {}, true),
+  uploadCoverImage: (fileName: string, dataUrl: string) =>
+    request<MediaAsset>("/admin/media/covers", { method: "POST", body: JSON.stringify({ fileName, dataUrl }) }, true),
+  deleteCoverImage: (name: string) => request<{ ok: boolean }>("/admin/media/covers/" + encodeURIComponent(name), { method: "DELETE" }, true)
 };

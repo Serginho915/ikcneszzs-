@@ -34,6 +34,8 @@ services:
       REDIS_URL: redis://:${REDIS_PASSWORD:-localredis}@redis:6379
     ports:
       - "4000:4000"
+    volumes:
+      - uploads-data:/app/uploads
     depends_on:
       env-setup:
         condition: service_completed_successfully
@@ -71,3 +73,4 @@ services:
         condition: service_started
 volumes:
   postgres-data:
+  uploads-data:

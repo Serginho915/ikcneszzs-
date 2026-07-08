@@ -5,6 +5,7 @@ import type { AuthRequest, Post } from "../types.js";
 import { auditLog } from "../services/auditLog.js";
 import { getAdminSettings, updateAdminSettings } from "../services/adminSettings.js";
 import { createPost, deletePost, listPosts, updatePost } from "../services/postStore.js";
+import { deleteCoverImage, listCoverImages, saveCoverImage } from "../services/mediaStore.js";
 import { sanitizeHtml } from "../services/htmlSanitizer.js";
 import { adminCsrf } from "../middleware/adminCsrf.js";
 
@@ -60,6 +61,33 @@ adminRouter.delete(
   asyncHandler(async (req: AuthRequest, res) => {
     await deletePost(req.params.id);
     await auditLog(req.user?.id, "post.delete", { id: req.params.id });
+    res.json({ ok: true });
+  })
+);
+
+adminRouter.get(
+  "/media/covers",
+  asyncHandler(async (_req, res) => {
+    res.json(await listCoverImages());
+  })
+);
+
+adminRouter.post(
+  "/media/covers",
+  adminCsrf,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const image = await saveCoverImage(req.body);
+    await auditLog(req.user?.id, "media.cover.create", { name: image.name });
+    res.status(201).json(image);
+  })
+);
+
+adminRouter.delete(
+  "/media/covers/:name",
+  adminCsrf,
+  asyncHandler(async (req: AuthRequest, res) => {
+    await deleteCoverImage(req.params.name);
+    await auditLog(req.user?.id, "media.cover.delete", { name: req.params.name });
     res.json({ ok: true });
   })
 );

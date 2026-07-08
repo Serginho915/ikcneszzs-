@@ -1,7 +1,7 @@
-import { BookOpen, Compass, Edit3, Globe2, LogOut, Plus, RefreshCw, Save, Settings, ShieldCheck, Trash2 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { api } from "./api";
-import { coverOptions, emptyPost, type AdminSettings, type Post } from "./domain";
+import { BookOpen, Compass, Edit3, Globe2, ImagePlus, LogOut, Menu, Plus, RefreshCw, Save, Settings, ShieldCheck, Trash2, X } from "lucide-react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { api, assetUrl } from "./api";
+import { coverOptions, emptyPost, type AdminSettings, type MediaAsset, type Post } from "./domain";
 
 type Route =
   | { name: "home" }
@@ -20,6 +20,15 @@ function getRoute(): Route {
 function navigate(path: string) {
   window.history.pushState({}, "", path);
   window.dispatchEvent(new PopStateEvent("popstate"));
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read file"));
+    reader.readAsDataURL(file);
+  });
 }
 
 function SocialIcon({ name }: { name: "x" | "threads" | "telegram" | "linkedin" }) {
@@ -81,20 +90,29 @@ function ShareBar({ title, url }: { title: string; url: string }) {
 
 
 function Header({ route }: { route: Route }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const isAdminRoute = route.name === "admin";
+  const go = (path: string) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
+
   return (
-    <header className="site-header">
-      <button className="brand" onClick={() => navigate("/")}>
+    <header className={"site-header " + (menuOpen ? "menu-open" : "")}>
+      <button className="brand" onClick={() => go("/")}>
         <span className="brand-mark">{isAdminRoute ? "A" : "信"}</span>
         <span>
           <strong>ikcneszzs.xyz</strong>
           <small>{isAdminRoute ? "Admin Control Center" : "文化商业指南"}</small>
         </span>
       </button>
+      <button className="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
+        {menuOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
       <nav>
-        <button className={route.name === "home" ? "active" : ""} onClick={() => navigate("/")}>{isAdminRoute ? "Articles" : "文章"}</button>
-        <button className={route.name === "about" ? "active" : ""} onClick={() => navigate("/about")}>{isAdminRoute ? "Author" : "作者"}</button>
-        <button className={route.name === "admin" ? "active" : ""} onClick={() => navigate("/admin")}>Admin</button>
+        <button className={route.name === "home" ? "active" : ""} onClick={() => go("/")}>{isAdminRoute ? "Articles" : "文章"}</button>
+        <button className={route.name === "about" ? "active" : ""} onClick={() => go("/about")}>{isAdminRoute ? "Author" : "作者"}</button>
+        <button className={route.name === "admin" ? "active" : ""} onClick={() => go("/admin")}>Admin</button>
       </nav>
     </header>
   );
@@ -166,7 +184,7 @@ function HomePage() {
 function ArticleCard({ post }: { post: Post }) {
   return (
     <article className="article-card" onClick={() => navigate(`/article/${post.slug}`)}>
-      <img src={post.coverImage} alt="" />
+      <img src={assetUrl(post.coverImage)} alt="" />
       <div>
         <p className="tag-line">{post.tags.slice(0, 3).join(" / ")}</p>
         <h3>{post.title}</h3>
@@ -189,7 +207,7 @@ function ArticlePage({ slug }: { slug: string }) {
 
   return (
     <main className="article-detail">
-      <img className="detail-cover" src={post.coverImage} alt="" />
+      <img className="detail-cover" src={assetUrl(post.coverImage)} alt="" />
       <div className="article-shell">
         <p className="tag-line">{post.tags.join(" / ")}</p>
         <h1>{post.title}</h1>
@@ -260,13 +278,19 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [selected, setSelected] = useState<Post | null>(null);
   const [settings, setSettings] = useState<AdminSettings | null>(null);
+  const [coverImages, setCoverImages] = useState<MediaAsset[]>([]);
   const [status, setStatus] = useState("");
 
   async function load() {
-    const [nextPosts, nextSettings] = await Promise.all([api.adminPosts(), api.getSettings()]);
+    const [nextPosts, nextSettings, nextCoverImages] = await Promise.all([api.adminPosts(), api.getSettings(), api.listCoverImages()]);
     setPosts(nextPosts);
     setSettings(nextSettings);
-    setSelected(nextPosts[0] ?? null);
+    setCoverImages(nextCoverImages);
+    setSelected((current) => current ?? nextPosts[0] ?? null);
+  }
+
+  async function refreshCovers() {
+    setCoverImages(await api.listCoverImages());
   }
 
   useEffect(() => {
@@ -307,14 +331,63 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       </aside>
       <section className="admin-main">
         {status && <p className="form-note">{status}</p>}
-        {selected && <PostEditor post={selected} onSaved={load} onDeleted={load} />}
+        <MediaManager images={coverImages} onChanged={refreshCovers} />
+        {selected && <PostEditor post={selected} coverImages={coverImages} onSaved={load} onDeleted={load} />}
         {settings && <SettingsEditor settings={settings} onSaved={setSettings} />}
       </section>
     </main>
   );
 }
 
-function PostEditor({ post, onSaved, onDeleted }: { post: Post; onSaved: () => void; onDeleted: () => void }) {
+function MediaManager({ images, onChanged }: { images: MediaAsset[]; onChanged: () => void }) {
+  const [status, setStatus] = useState("");
+
+  async function upload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setStatus("Uploading...");
+    try {
+      await api.uploadCoverImage(file.name, await readFileAsDataUrl(file));
+      event.target.value = "";
+      setStatus("Cover uploaded.");
+      await onChanged();
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Upload failed");
+    }
+  }
+
+  async function remove(name: string) {
+    await api.deleteCoverImage(name);
+    await onChanged();
+  }
+
+  return (
+    <div className="admin-card media-manager">
+      <div className="card-heading">
+        <h2><ImagePlus size={18} /> Cover images</h2>
+        <label className="upload-button">
+          Upload image
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={upload} />
+        </label>
+      </div>
+      {status && <p className="form-note">{status}</p>}
+      <div className="media-grid">
+        {images.map((image) => (
+          <div className="media-card" key={image.name}>
+            <img src={assetUrl(image.url)} alt="" />
+            <div>
+              <span>{image.name}</span>
+              <button className="danger" onClick={() => remove(image.name)}><Trash2 size={14} /> Delete</button>
+            </div>
+          </div>
+        ))}
+        {!images.length && <p className="empty-note">Upload covers here, then generated articles will randomly use them.</p>}
+      </div>
+    </div>
+  );
+}
+
+function PostEditor({ post, coverImages, onSaved, onDeleted }: { post: Post; coverImages: MediaAsset[]; onSaved: () => void; onDeleted: () => void }) {
   const [draft, setDraft] = useState(post);
   const tagsText = useMemo(() => draft.tags.join(", "), [draft.tags]);
 
@@ -352,9 +425,9 @@ function PostEditor({ post, onSaved, onDeleted }: { post: Post; onSaved: () => v
       <label>SEO title<input value={draft.seoTitle} onChange={(e) => setDraft({ ...draft, seoTitle: e.target.value })} /></label>
       <label>SEO description<textarea value={draft.seoDescription} onChange={(e) => setDraft({ ...draft, seoDescription: e.target.value })} /></label>
       <div className="cover-picker">
-        {coverOptions.map((cover) => (
+        {[...coverOptions, ...coverImages.map((image) => image.url)].map((cover) => (
           <button key={cover} className={draft.coverImage === cover ? "active" : ""} onClick={() => setDraft({ ...draft, coverImage: cover })}>
-            <img src={cover} alt="" />
+            <img src={assetUrl(cover)} alt="" />
           </button>
         ))}
       </div>

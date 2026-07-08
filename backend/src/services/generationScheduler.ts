@@ -2,6 +2,7 @@ import { getAdminSettings } from "./adminSettings.js";
 import { query } from "./db.js";
 import { generateArticle } from "./openrouter.js";
 import { createPost } from "./postStore.js";
+import { pickRandomCoverImage } from "./mediaStore.js";
 
 function periodStart(date: Date, period: "day" | "week" | "month") {
   const start = new Date(date);
@@ -53,6 +54,7 @@ export function startGenerationScheduler() {
         const runKey = `${now.toISOString().slice(0, 10)}T${currentTime}#${slot.index}`;
         if (log.includes(runKey)) continue;
         const article = await generateArticle();
+        article.coverImage = (await pickRandomCoverImage()) ?? article.coverImage;
         await createPost(article);
         nextLog.push(runKey);
         runsInPeriod += 1;
