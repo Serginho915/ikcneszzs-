@@ -24,18 +24,20 @@ services:
     depends_on:
       - postgres
       - redis
+    ports:
+      - "4102:4000"
     restart: unless-stopped
   frontend:
     build:
       context: ./frontend
       target: prod
       args:
-        VITE_API_URL: ${VITE_API_URL:-https://ikcneszzs.xyz/api}
+        VITE_API_URL: ${VITE_API_URL:-https://api.ikcneszzs.xyz/api}
     env_file:
       - path: ./frontend/.env.production
         required: false
     ports:
-      - "80:80"
+      - "8097:80"
     depends_on:
       - backend
     restart: unless-stopped

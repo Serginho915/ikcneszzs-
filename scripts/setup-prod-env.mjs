@@ -29,7 +29,7 @@ REDIS_PASSWORD=${redisPassword}
 LOCAL_SUPERADMIN_EMAIL=admin@ikcneszzs.xyz
 LOCAL_SUPERADMIN_PASSWORD=${adminPassword}
 OPENROUTER_API_KEY=
-VITE_API_URL=https://ikcneszzs.xyz/api
+VITE_API_URL=https://api.ikcneszzs.xyz/api
 `
 );
 
@@ -53,7 +53,7 @@ OPENROUTER_API_KEY=
 `
 );
 
-writeIfMissing("frontend/.env.production", "VITE_API_URL=https://ikcneszzs.xyz/api\n");
+writeIfMissing("frontend/.env.production", "VITE_API_URL=https://api.ikcneszzs.xyz/api\n");
 
 console.log("");
 console.log("Production env files are ready. Add OPENROUTER_API_KEY before real AI generation.");
