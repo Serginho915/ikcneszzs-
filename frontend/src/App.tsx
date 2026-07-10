@@ -112,7 +112,6 @@ function Header({ route }: { route: Route }) {
       <nav>
         <button className={route.name === "home" ? "active" : ""} onClick={() => go("/")}>{isAdminRoute ? "Articles" : "文章"}</button>
         <button className={route.name === "about" ? "active" : ""} onClick={() => go("/about")}>{isAdminRoute ? "Author" : "作者"}</button>
-        <button className={route.name === "admin" ? "active" : ""} onClick={() => go("/admin")}>Admin</button>
       </nav>
     </header>
   );
