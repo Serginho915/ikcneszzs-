@@ -303,11 +303,11 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   }
 
   async function generateNow() {
-    setStatus("Generating draft...");
+    setStatus("Generating and publishing...");
     const post = await api.generateNow();
     setPosts((items) => [post, ...items]);
     setSelected(post);
-    setStatus("Draft generated and saved.");
+    setStatus("Article generated and published.");
   }
 
   return (

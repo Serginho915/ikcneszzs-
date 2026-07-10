@@ -28,12 +28,12 @@ export async function generateArticle() {
         slug,
         excerpt: "这是缺少 OpenRouter key 时的开发占位内容，生产环境会返回明确错误。",
         tags: ["开发环境", "跨文化", "信任"],
-        status: "draft" as const,
+        status: "published" as const,
         coverImage: pickCover(slug),
         seoTitle: "开发环境占位文章：跨文化商业信任",
         seoDescription: "OpenRouter key 未配置时生成的开发占位文章，用于验证后台流程。",
         contentHtml: sanitizeHtml(
-          "<h2>开篇思考</h2><p>没有真实AI key时，系统仍应稳定运行。</p><p>这篇草稿证明生成流程、数据库保存、封面持久化和管理后台都可以工作。</p>"
+          "<h2>开篇思考</h2><p>没有真实AI key时，系统仍应稳定运行。</p><p>这篇文章证明生成流程、数据库保存、封面持久化和管理后台都可以工作。</p>"
         )
       };
     }
@@ -65,7 +65,7 @@ export async function generateArticle() {
   const article = articleSchema.parse(JSON.parse(raw));
   return {
     ...article,
-    status: "draft" as const,
+    status: "published" as const,
     coverImage: pickCover(article.slug),
     contentHtml: sanitizeHtml(article.contentHtml)
   };
