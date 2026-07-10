@@ -1,13 +1,14 @@
 import type { AdminSettings, MediaAsset, Post } from "./domain";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
-const ASSET_URL = API_URL.replace(/\/api\/?$/, "");
+const ASSET_URL = (import.meta.env.VITE_ASSET_URL ?? API_URL.replace(/\/api\/?$/, "")).replace(/\/$/, "");
 
 export function assetUrl(url: string) {
   if (!url || url.startsWith("http") || url.startsWith("data:")) return url;
-  const path = url.startsWith("/") ? url : "/" + url;
-  if (path.startsWith("/uploads/")) return API_URL + path;
-  return ASSET_URL + path;
+  let path = url.startsWith("/") ? url : "/" + url;
+  path = path.replace(/^\/api\/uploads\//, "/uploads/");
+  if (path.startsWith("/uploads/")) return ASSET_URL + path;
+  return path;
 }
 
 let accessToken = localStorage.getItem("ikc_access_token") ?? "";
