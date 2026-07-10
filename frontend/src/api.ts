@@ -5,7 +5,9 @@ const ASSET_URL = API_URL.replace(/\/api\/?$/, "");
 
 export function assetUrl(url: string) {
   if (!url || url.startsWith("http") || url.startsWith("data:")) return url;
-  return ASSET_URL + (url.startsWith("/") ? url : "/" + url);
+  const path = url.startsWith("/") ? url : "/" + url;
+  if (path.startsWith("/uploads/")) return API_URL + path;
+  return ASSET_URL + path;
 }
 
 let accessToken = localStorage.getItem("ikc_access_token") ?? "";

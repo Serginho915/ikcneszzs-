@@ -25,7 +25,10 @@ app.use(
 app.use(express.json({ limit: "12mb" }));
 app.use(cookieParser());
 app.use(apiLimiter);
-app.use("/uploads", express.static(process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads")));
+
+const uploadsDir = process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads");
+app.use("/uploads", express.static(uploadsDir));
+app.use("/api/uploads", express.static(uploadsDir));
 
 app.use("/api/auth", authRouter);
 app.use("/api/posts", postsRouter);

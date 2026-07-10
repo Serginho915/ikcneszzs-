@@ -11,7 +11,7 @@ export type MediaAsset = {
 
 const uploadRoot = process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads");
 const coversDir = path.join(uploadRoot, "covers");
-const publicPrefix = "/uploads/covers";
+const publicPrefix = "/api/uploads/covers";
 const maxUploadBytes = 10 * 1024 * 1024;
 const allowedTypes: Record<string, string> = {
   "image/jpeg": "jpg",
